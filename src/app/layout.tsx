@@ -10,7 +10,6 @@ export const metadata: Metadata = {
   title: 'DairyFlow — Dairy Farm Management System',
   description:
     'Comprehensive dairy farm management tool for tracking herd, milk production, sales, expenses, and profitability.',
-  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
