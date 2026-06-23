@@ -22,6 +22,7 @@ export const NAV_ITEMS = [
   { label: 'Annual P&L', href: '/dashboard/annual-report', icon: 'TrendingUp' },
   { label: 'Cash Flow', href: '/dashboard/cash-flow', icon: 'ArrowLeftRight' },
   { label: 'Feed Inventory', href: '/dashboard/feed-inventory', icon: 'Package' },
+  { label: 'Resources & Guides', href: '/dashboard/resources', icon: 'BookOpen' },
 ] as const;
 
 // ---- Status Options ----

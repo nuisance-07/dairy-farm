@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Settings, Beef, Milk, ShoppingCart, Wallet,
   Wheat, Stethoscope, Users, Receipt, Tractor, FileBarChart,
   TrendingUp, ArrowLeftRight, Package, ChevronLeft, ChevronRight,
-  Menu, X, LogOut,
+  Menu, X, LogOut, BookOpen,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { NAV_ITEMS } from '@/lib/constants';
@@ -15,7 +15,7 @@ import { NAV_ITEMS } from '@/lib/constants';
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard, Settings, Beef, Milk, ShoppingCart, Wallet,
   Wheat, Stethoscope, Users, Receipt, Tractor, FileBarChart,
-  TrendingUp, ArrowLeftRight, Package,
+  TrendingUp, ArrowLeftRight, Package, BookOpen,
 };
 
 export default function Sidebar() {
