@@ -1,11 +1,16 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Toaster } from 'react-hot-toast';
 import './globals.css';
+
+export const viewport: Viewport = {
+  themeColor: '#1B5E20',
+};
 
 export const metadata: Metadata = {
   title: 'DairyFlow — Dairy Farm Management System',
   description:
     'Comprehensive dairy farm management tool for tracking herd, milk production, sales, expenses, and profitability.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
