@@ -33,13 +33,16 @@ interface DashboardData {
 }
 
 export default function DashboardPage() {
-  const { farm } = useAuth();
+  const { farm, loading: authLoading } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
   const fetchDashboardData = useCallback(async () => {
-    if (!farm) return;
+    if (!farm) {
+      setLoading(false);
+      return;
+    }
 
     const today = new Date().toISOString().split('T')[0];
     const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
@@ -169,10 +172,12 @@ export default function DashboardPage() {
   }, [farm, supabase]);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+    if (!authLoading) {
+      fetchDashboardData();
+    }
+  }, [fetchDashboardData, authLoading]);
 
-  if (loading) return <DashboardSkeleton />;
+  if (authLoading || loading) return <DashboardSkeleton />;
 
   if (!farm) {
     return (
