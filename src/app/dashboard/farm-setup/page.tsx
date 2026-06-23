@@ -187,15 +187,14 @@ export default function FarmSetupPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="label">Milking Sessions per Day</label>
-                <select
-                  className="input select"
+                <input
+                  type="number"
+                  className="input"
                   value={form.milking_sessions_per_day}
                   onChange={(e) => setForm({ ...form, milking_sessions_per_day: Number(e.target.value) })}
-                >
-                  <option value={1}>1 (AM only)</option>
-                  <option value={2}>2 (AM & PM)</option>
-                  <option value={3}>3 (AM, PM & Evening)</option>
-                </select>
+                  min={1}
+                  max={10}
+                />
               </div>
               <div>
                 <label className="label">Target Milk per Cow (L/day)</label>

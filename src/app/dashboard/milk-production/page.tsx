@@ -7,7 +7,6 @@ import Modal from '@/components/ui/Modal';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import EmptyState from '@/components/ui/EmptyState';
 import { TableSkeleton } from '@/components/ui/Skeleton';
-import { MILKING_SESSIONS } from '@/lib/constants';
 import { formatDate, getToday, formatNumber, exportToCSV } from '@/lib/utils';
 import type { Animal, MilkProduction } from '@/lib/types';
 import { Plus, Search, Edit2, Trash2, Loader2, Milk, Download, AlertTriangle } from 'lucide-react';
@@ -28,6 +27,15 @@ export default function MilkProductionPage() {
   const [deleting, setDeleting] = useState(false);
 
   const [form, setForm] = useState({ animal_id: '', date: getToday(), session: 'AM' as string, litres: '' });
+
+  const getSessionOptions = (count: number) => {
+    if (count === 1) return ['AM'];
+    if (count === 2) return ['AM', 'PM'];
+    if (count === 3) return ['AM', 'PM', 'Evening'];
+    return Array.from({ length: count }, (_, i) => `Session ${i + 1}`);
+  };
+
+  const sessionOptions = farm ? getSessionOptions(farm.milking_sessions_per_day) : ['AM'];
 
   const fetchData = useCallback(async () => {
     if (!farm) return;
@@ -219,7 +227,7 @@ export default function MilkProductionPage() {
             <div>
               <label className="label">Session *</label>
               <select className="input select" value={form.session} onChange={(e) => setForm({ ...form, session: e.target.value })} required>
-                {MILKING_SESSIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                {sessionOptions.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
           </div>
