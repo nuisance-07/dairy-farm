@@ -3,14 +3,56 @@
 import { useState, useRef, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { Bell, Search, Info, CheckCircle2 } from 'lucide-react';
-import { NAV_ITEMS } from '@/lib/constants';
+import { Bell, Search, Info, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { NAV_ITEMS, REORDER_THRESHOLD_KG } from '@/lib/constants';
+import { createClient } from '@/lib/supabase/client';
 
 export default function Header() {
   const pathname = usePathname();
   const { user, farm } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<{ id: string; title: string; desc: string; type: 'info' | 'warning' | 'success'; time: string }[]>([]);
   const notificationRef = useRef<HTMLDivElement>(null);
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchAlerts() {
+      if (!farm) return;
+      const [purchasesRes, usageRes] = await Promise.all([
+        supabase.from('feed_purchases').select('feed_type, quantity').eq('farm_id', farm.id),
+        supabase.from('feed_usage').select('feed_type, quantity_used').eq('farm_id', farm.id),
+      ]);
+      const purchases = purchasesRes.data || [];
+      const usage = usageRes.data || [];
+
+      const purchaseMap: Record<string, number> = {};
+      purchases.forEach((p) => { purchaseMap[p.feed_type] = (purchaseMap[p.feed_type] || 0) + Number(p.quantity); });
+
+      const usageMap: Record<string, number> = {};
+      usage.forEach((u) => { usageMap[u.feed_type] = (usageMap[u.feed_type] || 0) + Number(u.quantity_used); });
+
+      const alerts: typeof notifications = [];
+      Object.entries(purchaseMap).forEach(([feed_type, total_purchased]) => {
+        const total_used = usageMap[feed_type] || 0;
+        const current_stock = Math.max(total_purchased - total_used, 0);
+        if (current_stock < REORDER_THRESHOLD_KG) {
+          alerts.push({
+            id: `low_feed_${feed_type}`,
+            title: 'Low Feed Alert',
+            desc: `Your stock of ${feed_type} is running low (${current_stock} remaining). Please reorder soon.`,
+            type: 'warning',
+            time: 'Just now',
+          });
+        }
+      });
+
+      setNotifications([
+        ...alerts,
+        { id: 'welcome', title: 'Welcome to DairyFlow!', desc: 'Your farm dashboard is successfully set up and ready to use.', type: 'success', time: 'Recently' },
+      ]);
+    }
+    fetchAlerts();
+  }, [farm, supabase]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -84,10 +126,12 @@ export default function Header() {
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
           >
             <Bell className="w-[18px] h-[18px]" />
-            <span
-              className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
-              style={{ background: '#EF4444' }}
-            />
+            {notifications.length > 0 && (
+              <span
+                className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
+                style={{ background: '#EF4444' }}
+              />
+            )}
           </button>
 
           {showNotifications && (
@@ -97,29 +141,29 @@ export default function Header() {
             >
               <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
                 <h3 className="font-bold text-gray-900" style={{ fontFamily: 'Outfit, sans-serif' }}>Notifications</h3>
-                <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">2 New</span>
+                <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">{notifications.length} New</span>
               </div>
               <div className="max-h-[300px] overflow-y-auto">
-                <div className="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer">
-                  <div className="flex gap-3">
-                    <div className="mt-0.5"><CheckCircle2 className="w-5 h-5 text-green-600" /></div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Welcome to DairyFlow!</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Your farm dashboard is successfully set up and ready to use.</p>
-                      <p className="text-[10px] text-gray-400 mt-1">Just now</p>
+                {notifications.length === 0 ? (
+                  <div className="p-6 text-center text-gray-500 text-sm">You're all caught up!</div>
+                ) : (
+                  notifications.map((n) => (
+                    <div key={n.id} className="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer">
+                      <div className="flex gap-3">
+                        <div className="mt-0.5">
+                          {n.type === 'success' && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                          {n.type === 'info' && <Info className="w-5 h-5 text-blue-500" />}
+                          {n.type === 'warning' && <AlertTriangle className="w-5 h-5 text-red-500" />}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{n.title}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{n.desc}</p>
+                          <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <div className="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer">
-                  <div className="flex gap-3">
-                    <div className="mt-0.5"><Info className="w-5 h-5 text-blue-500" /></div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">System Tip</p>
-                      <p className="text-xs text-gray-500 mt-0.5">You can install this app to your home screen from your mobile browser menu.</p>
-                      <p className="text-[10px] text-gray-400 mt-1">2 mins ago</p>
-                    </div>
-                  </div>
-                </div>
+                  ))
+                )}
               </div>
               <div className="px-4 py-2 text-center border-t border-gray-100">
                 <button className="text-sm font-medium text-green-700 hover:text-green-800">Mark all as read</button>
