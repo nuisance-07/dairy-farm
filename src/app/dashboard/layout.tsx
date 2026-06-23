@@ -3,6 +3,7 @@
 import { AuthProvider } from '@/hooks/useAuth';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
+import FarmGuard from '@/components/layout/FarmGuard';
 
 export default function DashboardLayout({
   children,
@@ -30,7 +31,9 @@ export default function DashboardLayout({
           
           <main className="flex-1 p-4 md:p-6 lg:p-8">
             <div className="max-w-7xl mx-auto animate-fade-in">
-              {children}
+              <FarmGuard>
+                {children}
+              </FarmGuard>
             </div>
           </main>
         </div>
